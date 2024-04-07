@@ -55,3 +55,60 @@ Las dependencias del `package.json`:
     "typescript": "~4.9.4"
 }
 ```
+
+---
+
+# Creando Micro Frontends y Librería
+
+---
+
+## 1° Micro frontend: mf-shell
+
+En toda arquitectura de micro frontend siempre vamos a tener un proyecto que se encargue de orquestar los demás micro frontend, en este caso, el proyecto `mf-shell` que construiremos a continuación tendrá esa responsabilidad.
+
+Para crear nuestra primera aplicación de micro frontend llamado `mf-shell` ejecutaremos el siguiente comando:
+
+```bash
+$ ng g application mf-shell --style=scss --routing=true
+```
+
+**NOTA**
+
+- Observar que le estamos indicando qué tipo de hoja de estilo usaremos: `scss`.
+- Le indicamos que nos construya el módulo de rutas: `--routing=true`.
+
+## 2° Micro frontend: mf-payment
+
+El segundo proyecto o micro frontend que crearemos se llamará `mf-payment`. En este caso no crearemos las rutas como lo hicimos en el primer micro frontend.
+
+```bash
+$ ng g application mf-payment --style=scss
+```
+
+## 3° Micro frontend: mf-shopping
+
+Como tercer proyecto o micro frontend crearemos el `mf-shopping`. En este proyecto sí necesitamos el módulo de rutas, es por eso que agregamos la bandera `--routing=true`.
+
+```bash
+$ ng g application mf-shopping --style=scss --routing=true
+```
+
+## 4° Proyecto librería: commons-lib
+
+Como último proyecto, crearemos el del tipo librería llamado `commons-lib`. Este proyecto de tipo librería lo usaremos para compartir un `service` para que se puedan comunicar cada uno de los micro frontend.
+
+Ahora, también se podría crear un proyecto de tipo librería de Angular donde agreguemos todos los componentes que van a ser utilizados por cada uno de los micro frontends, de esa manera, nuestros componentes tendría una guía de estilos, el mismo estilo de diseños para cada uno de los micro frontends y así, como ese ejemplo podríamos darle más utilidades a un proyecto de librería. **La idea es que nuestros micro frontends también pueden consumir otras librerías realizadas en el mismo framework de Angular.**
+
+```bash
+$ ng g library commons-lib
+```
+
+Luego de ejecutar todos los comandos en la raíz del espacio de trabajo, la estrucura del proyecto quedaría de esta manera:
+
+![microfrontends](./assets/02.micro-frontends-and-library.png)
+
+En la imagen anterior, estamos desplegando el directorio del micro frontend `mf-shopping` para conocer detalles de su estructura interna.
+
+En la imagen siguiente vemos la estructura del proyecto de librería `commons-lib`:
+
+![library](./assets/03.library.png)
