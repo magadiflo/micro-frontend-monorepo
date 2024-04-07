@@ -1,27 +1,57 @@
-# MicroFrontendMonorepo
+# [MICRO - FRONTEND con Angular y Module Federation](https://www.youtube.com/watch?v=12x2QpDCsfk&t=794s)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.1.1.
+Tutorial tomado del canal de **youtube LogiDev**
 
-## Development server
+---
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Características del proyecto
 
-## Code scaffolding
+- Angular 15.1.1
+- Node v16.13.2
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Build
+## Creando espacio de trabajo
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Para trabajar con una arquitectura monorepo en Angular, **primero debemos crear nuestro espacio de trabajo** utilizando el siguiente comando.
 
-## Running unit tests
+```bash
+$ ng new micro-frontend-monorepo --create-application=false
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+**NOTA**
 
-## Running end-to-end tests
+`--create-application=false`, con esta bandera le decimos a la CLI que no queremos que nos cree la carpeta `/src`, ni tampoco los archivos `karma.config.js`, etc., es decir, **únicamente queremos que nos cree un espacio de trabajo.**
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+A continuación de muestra los archivos y directorios creados en nuestro espacio de trabajo luego de haber ejecutado el comando anterior:
 
-## Further help
+![Epacio de trabajo](./assets/01.espacio-trabajo.png)
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Las dependencias del `package.json`:
+
+```json
+"dependencies": {
+    "@angular/animations": "^15.1.0",
+    "@angular/common": "^15.1.0",
+    "@angular/compiler": "^15.1.0",
+    "@angular/core": "^15.1.0",
+    "@angular/forms": "^15.1.0",
+    "@angular/platform-browser": "^15.1.0",
+    "@angular/platform-browser-dynamic": "^15.1.0",
+    "@angular/router": "^15.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.12.0"
+},
+"devDependencies": {
+    "@angular/cli": "~15.1.1",
+    "@angular/compiler-cli": "^15.1.0",
+    "@types/jasmine": "~4.3.0",
+    "jasmine-core": "~4.5.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.1.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.0.0",
+    "typescript": "~4.9.4"
+}
+```
