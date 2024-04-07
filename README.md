@@ -288,3 +288,218 @@ UPDATE package.json (1273 bytes)
 UPDATE projects/mf-payment/src/main.ts (58 bytes)
 √ Packages installed successfully.
 ```
+
+---
+
+# Agregando funcionalidad a proyectos
+
+---
+
+## Listando productos: mf-shopping
+
+En este apartado vamos a listar los productos que nos retorna el endpoint que vamos a consumir. 
+
+### Modelos 
+
+Para eso crearemos nuestros modelos `anime-api.interface.ts` y `product-card.interface.ts`:
+
+```typescript
+
+export interface IResponseAnime {
+  pagination: Pagination;
+  data: Datum[];
+}
+
+interface Datum {...}
+interface Producer {...}
+interface Broadcast {...}
+interface Aired {...}
+interface Prop {...}
+interface From {...}
+interface Trailer {...}
+interface Images2 {...}
+interface Images {...}
+interface Jpg {...}
+interface Pagination {...}
+interface Items {...}
+```
+
+```typescript
+export interface IProductCard {
+  urlImage: string;
+  price: number;
+  name: string;
+  description: string;
+}
+```
+
+### Módulo
+
+Creamos el módulo `products.module.ts` que contendrá los componentes que crearemos posteriormente:
+
+```typescript
+const routes: Routes = [
+  { path: '', component: ProductsComponent }
+];
+
+@NgModule({
+  declarations: [ProductsComponent],
+  imports: [
+    RouterModule.forChild(routes),
+    CommonModule,
+    ProductCardComponent,
+  ],
+})
+export class ProductsModule {}
+```
+
+Observar que crearemos un componente llamado `ProductCardComponent` que será del tipo `Stand Alone Component`, por esa razón es que está en la sección de `imports`, mientras
+que en la sección de `declarations` está el componente `ProductsComponent` que no es del tipo standalone component, sino un componente normal.
+
+### Componentes
+
+El primer componente a crear será el `ProductCardComponent` de tipo `standalone component`:
+
+```typescript
+@Component({
+  selector: 'app-product-card',
+  standalone: true,
+  templateUrl: './product-card.component.html',
+  styleUrls: ['./product-card.component.scss'],
+  imports: [CommonModule]
+})
+export class ProductCardComponent {
+
+  @Input() product?: IProductCard;
+
+  clickCard(): void {
+    console.log('clickCard()');
+  }
+
+}
+```
+
+Su componente en html sería el siguiente:
+
+```html
+<div class="card" *ngIf="product">
+  <div class="card-image">
+    <img [src]="product.urlImage" />
+  </div>
+
+  <p class="card__price">{{ product.price | currency }}</p>
+
+  <div class="card-description">
+    <label class="card-description__title">{{ product.name }} </label>
+    <p class="card-description__description">
+      {{ product.description }}
+    </p>
+  </div>
+
+  <button class="card__add" (click)="clickCard()">Add to cart</button>
+  <button class="card__buy">Buy now</button>
+</div>
+```
+
+Como segundo componente, crearemos el component `products`:
+
+```typescript
+
+@Component({
+  selector: 'app-products',
+  templateUrl: './products.component.html',
+  styleUrls: ['./products.component.scss']
+})
+export class ProductsComponent implements OnInit {
+
+  public products: IProductCard[] = [];
+
+  constructor(private _animeService: AnimeService) { }
+
+  ngOnInit(): void {
+    this._animeService.getAnimes()
+      .subscribe(response => {
+        this.products = response;
+      });
+  }
+
+}
+```
+
+El elemento html de este componente sería: 
+
+```html
+<div class="app">
+  <h1>Productos</h1>
+
+  <div class="container">
+    <app-product-card *ngFor="let product of products" [product]="product"></app-product-card>
+  </div>
+</div>
+```
+
+### Servicio
+
+El componente `products` está consumiendo el servicio `AnimeService`. A continuación crearemos dicho servicio:
+
+```typescript
+@Injectable({
+  providedIn: 'root'
+})
+export class AnimeService {
+
+  constructor(private _httpClient: HttpClient) { }
+
+  public getAnimes(): Observable<IProductCard[]> {
+    return this._httpClient.get<IResponseAnime>(`https://api.jikan.moe/v4/anime?q=kimetsu&sfw`)
+      .pipe(
+        map(response => {
+          return response.data
+            .filter(item => item.synopsis)
+            .map<IProductCard>(item => ({
+              urlImage: item.images.jpg.image_url,
+              price: this._getNumberRandom(),
+              name: item.title,
+              description: item.synopsis!
+            }))
+        })
+      );
+  }
+
+  private _getNumberRandom() {
+    return Math.floor(Math.random() * (500 - 1 + 1) + 1);
+  }
+}
+```
+
+### Routing Module
+
+Configuramos la ruta donde levantaremos la aplicación:
+
+```typescript
+const routes: Routes = [
+  {
+    path: '',
+    loadChildren: () => import('./products/products.module').then(m => m.ProductsModule),
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+### Ejecutando micro frontend mf-shopping
+
+Levantamos el micro frontend `mf-shopping` ejecutando el siguiente comando:
+
+```bash
+$ ng serve mf-shopping -o
+```
+
+Como configuramos el `mf-shopping` para que se ejecute en el puerto `4201` entonces se abrirá automáticamente gracias a la bandera `-o`.
+
+![run mf-shopping](./assets/04.run-mf-shopping.png)
+
