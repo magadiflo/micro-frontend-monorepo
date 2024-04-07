@@ -133,3 +133,110 @@ $ npm i -D @angular-architects/module-federation@^15.0.0
 
 > Observar, que como estamos usando Angular 15, en la instalación del angular-architects especificamos la versión que será compatible con nuestra vesión de Angular.
 
+## Agregando Module Federation: mf-shell
+
+Una vez que hemos instalado la librería `@angular-architects/module-federation`, nos toca agregar el `module federation` a cada proyecto creado inicialmente. 
+
+En este caso lo agregaremos al proyecto `mf-shell` utilizando el siguiente comando:
+
+```bash
+$ ng add @angular-architects/module-federation@^15.0.0 --project mf-shell --port 4200 --type host
+
+Skipping installation: Package already installed
+CREATE projects/mf-shell/webpack.prod.config.js (46 bytes)
+CREATE projects/mf-shell/webpack.config.js (413 bytes)
+CREATE projects/mf-shell/src/bootstrap.ts (214 bytes)
+UPDATE tsconfig.json (903 bytes)
+UPDATE projects/mf-shell/tsconfig.app.json (217 bytes)
+UPDATE angular.json (8678 bytes)
+UPDATE package.json (1273 bytes)
+UPDATE projects/mf-shell/src/main.ts (58 bytes)
+√ Packages installed successfully.
+```
+
+**DONDE**
+
+- `--project`, seleccionamos el proyecto al que aplicaremos esta configuración.
+- `--type`, le decimos qué tipo de micro frontend va a ser. En este caso, este será un micro frontend del tipo `host`.
+- `--port`, le decimos que este micro frontend correrá en el puerto 4200.
+
+Luego de que se ejecuta el comando anterior, se nos creará varios archivos, uno de ellos es el `webpack.config.js`.
+
+En el archivo `webpack.config.js` observamos el siguiente código que se crea por defecto:
+
+```javascript
+const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
+
+module.exports = withModuleFederationPlugin({
+
+  remotes: {
+    "mfPayment": "http://localhost:4200/remoteEntry.js",
+    "mfShopping": "http://localhost:4201/remoteEntry.js",
+  },
+
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  },
+
+});
+```
+
+- En el objeto `remotes` se agregan los micro frontends que se van a integrar, en este caso, al proyecto host `mf-shell`, ya que ahí está ese archivo.
+Es importante notar que micro frontends fueron agregados de manera automática cuando agregamos el `module federation` al `mf-shell`.
+
+- En el objeto `shared` se colocan todo aquello que se va a compartir. Por ejemplo, compartirá el `package.json` del proyecto con todos los micro frontends para que trabajen con la misma versión de librerías.
+
+## Agregando Module Federation: mf-shopping
+
+Agregamos el module federation al micro frontend mf-shopping. Es importante notar que dentro de las banderas utilizadas estamos diciéndole que es del `--type remote`. 
+Es `remote` porque este micro frontend será integrada dentro de la aplicación `host`, es decir, dentro del micro frontend `mf-shell`.
+
+Si observamos el `mf-shell` veremos que en el archivo `webpack.config.js` el objeto `remotes` y dentro de ese objeto está siendo llamado nuestro micro frontend
+`mf-shopping`, por esa razón es que este micro frontend debe ser remoto, incluso le hemos colocado el puerto `4201` desde donde será llamado:
+
+```bash
+$ ng add @angular-architects/module-federation@^15.0.0 --project mf-shopping --port 4201 --type remote
+
+Skipping installation: Package already installed
+CREATE projects/mf-shopping/webpack.prod.config.js (46 bytes)
+CREATE projects/mf-shopping/webpack.config.js (389 bytes)
+CREATE projects/mf-shopping/src/bootstrap.ts (214 bytes)
+UPDATE tsconfig.json (903 bytes)
+UPDATE projects/mf-shopping/tsconfig.app.json (217 bytes)
+UPDATE angular.json (9113 bytes)
+UPDATE package.json (1273 bytes)
+UPDATE projects/mf-shopping/src/main.ts (58 bytes)
+√ Packages installed successfully.
+```
+
+Luego de que se ejecuta el comando anterior, se nos creará varios archivos, uno de ellos es el `webpack.config.js`.
+
+En el archivo `webpack.config.js` observamos el siguiente código que se crea por defecto:
+
+```javascript
+const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
+
+module.exports = withModuleFederationPlugin({
+
+  name: 'mf-shopping',
+
+  exposes: {
+    './Component': './projects/mf-shopping/src/app/app.component.ts',
+  },
+
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  },
+
+});
+```
+Observemos que como este micro frontend es del `type remote` el contenido del archivo `webpack.config.js` es algo distinto al contenido del micro frontend del tipo `host`.
+
+**DONDE**
+
+- `name`, propiedad donde se le asigna un nombre a nuestro micro frontend. En nuestro caso lo puso tal cual se llama el proyecto `mf-shopping`.
+- `expose`, aquí deben ir los elementos o módulos que queremos que se compartan. Por defecto nos da el ejemplo que dice, sabes qué comparteme este componente `./projects/mf-shopping/src/app/app.component.ts`,
+  pero, lo que en realidad debemos compartir son `módulos` dado que estamos usando `Module Federation`, precisamente para compartir `módulos` y no componentes.
+
+**NOTA**
+> `Module federation` sirve para compartir **módulos**, por eso se llama federación de **módulos**, lo que vamos a compartir son **módulos**, entonces  en el `expose` lo que debemos exponer en realidad son módulos.
