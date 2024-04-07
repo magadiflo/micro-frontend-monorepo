@@ -115,7 +115,9 @@ En la imagen siguiente vemos la estructura del proyecto de librería `commons-li
 
 ---
 
-## [Activando Module Federation](https://www.npmjs.com/package/@angular-architects/module-federation)
+# [Activando Module Federation](https://www.npmjs.com/package/@angular-architects/module-federation)
+
+---
 
 `@angular-architects/module-federation`, es una herramienta que permite la integración de la funcionalidad de `Module Federation` en aplicaciones Angular. `Module Federation` es una característica de Webpack 5 que **facilita la compartición de código entre distintas aplicaciones JavaScript. Permite cargar módulos de manera remota y dinámica en tiempo de ejecución, lo que resulta especialmente útil en entornos de microfrontends y arquitecturas distribuidas.**
 
@@ -171,7 +173,7 @@ module.exports = withModuleFederationPlugin({
 
   remotes: {
     "mfPayment": "http://localhost:4200/remoteEntry.js",
-    "mfShopping": "http://localhost:4201/remoteEntry.js",
+    "mfShopping": "http://localhost:4200/remoteEntry.js",
   },
 
   shared: {
@@ -188,11 +190,22 @@ Es importante notar que micro frontends fueron agregados de manera automática c
 
 ## Agregando Module Federation: mf-shopping
 
-Agregamos el module federation al micro frontend mf-shopping. Es importante notar que dentro de las banderas utilizadas estamos diciéndole que es del `--type remote`. 
+Agregamos el module federation al micro frontend **mf-shopping**. Es importante notar que dentro de las banderas utilizadas estamos diciéndole que es del `--type remote`. 
+
 Es `remote` porque este micro frontend será integrada dentro de la aplicación `host`, es decir, dentro del micro frontend `mf-shell`.
 
-Si observamos el `mf-shell` veremos que en el archivo `webpack.config.js` el objeto `remotes` y dentro de ese objeto está siendo llamado nuestro micro frontend
-`mf-shopping`, por esa razón es que este micro frontend debe ser remoto, incluso le hemos colocado el puerto `4201` desde donde será llamado:
+Si observamos el `mf-shell` veremos que en el archivo `webpack.config.js` el objeto `remotes` y dentro de ese objeto está siendo llamado nuestro micro frontend `mf-shopping`, por esa razón es que este micro frontend debe ser remoto, incluso le hemos colocado el puerto `4201` desde donde será llamado. Observemos la modificación que le hicimos al `webpack.config.js` del `mf-shell`:
+
+```js
+remotes: {
+    ...
+    "mfShopping": "http://localhost:4201/remoteEntry.js",
+},
+```
+
+Observar que, como agregaremos el module federation al mf-shopping con puerto 4201, ese mismo puerto debe verse reflejado en el archivo `webpack.config.js` del `mf-shell`.
+
+Ahora sí, ejecutamos el comando siguiente para agregar el module federation al micro frontend **mf-shopping**:
 
 ```bash
 $ ng add @angular-architects/module-federation@^15.0.0 --project mf-shopping --port 4201 --type remote
@@ -240,3 +253,38 @@ Observemos que como este micro frontend es del `type remote` el contenido del ar
 
 **NOTA**
 > `Module federation` sirve para compartir **módulos**, por eso se llama federación de **módulos**, lo que vamos a compartir son **módulos**, entonces  en el `expose` lo que debemos exponer en realidad son módulos.
+
+
+## Agregando Module Federation: mf-payment
+
+Agregamos el module federation al micro frontend **mf-payment**. Es importante notar que dentro de las banderas utilizadas estamos diciéndole que es del `--type remote`. 
+
+Es `remote` porque este micro frontend será integrada dentro de la aplicación `host`, es decir, dentro del micro frontend `mf-shell`.
+
+Si observamos el `mf-shell` veremos que en el archivo `webpack.config.js` el objeto `remotes` y dentro de ese objeto está siendo llamado nuestro micro frontend `mf-payment`, por esa razón es que este micro frontend debe ser remoto, incluso le hemos colocado el puerto `4202` desde donde será llamado.
+
+Veamos que hasta este punto el objeto `remotes` del archivo `webpack.config.js` ya tiene configurado los puertos para sus correspondientes micro frontends:
+
+```js
+remotes: {
+    "mfPayment": "http://localhost:4202/remoteEntry.js",
+    "mfShopping": "http://localhost:4201/remoteEntry.js",
+},
+```
+
+Listo, ahora que configuramos el puerto del mf-payment en el archivo del mf-shell, es momento de agregar el module federation al mf-payment:
+
+```bash
+$ ng add @angular-architects/module-federation@^15.0.0 --project mf-payment --port 4202 --type remote
+
+Skipping installation: Package already installed
+CREATE projects/mf-payment/webpack.prod.config.js (46 bytes)
+CREATE projects/mf-payment/webpack.config.js (387 bytes)
+CREATE projects/mf-payment/src/bootstrap.ts (214 bytes)
+UPDATE tsconfig.json (903 bytes)
+UPDATE projects/mf-payment/tsconfig.app.json (217 bytes)
+UPDATE angular.json (9543 bytes)
+UPDATE package.json (1273 bytes)
+UPDATE projects/mf-payment/src/main.ts (58 bytes)
+√ Packages installed successfully.
+```
