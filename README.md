@@ -601,3 +601,65 @@ export interface ICommonProduct {
 ```
 
 De esta forma, cuando se agregue un producto, lo guardaremos en el `localStorage` y como hemos creado un `BehaviorSubject`, quienes se subscriban a ese observable serán notificados con el número de elementos que se han agregado.
+
+## Agregando funcionalidad al mf-shopping
+
+Habiendo configurado nuestro proyecto de librería, es hora de utilizarlo en nuestro micro frontend `mf-shopping`. Para eso nos iremos al componente `ProductCardComponent` y agregaremos la siguiente funcionalidad.
+
+```typescript
+@Component({
+  selector: 'app-product-card',
+  standalone: true,
+  templateUrl: './product-card.component.html',
+  styleUrls: ['./product-card.component.scss'],
+  imports: [CommonModule]
+})
+export class ProductCardComponent {
+
+  @Input() product?: IProductCard;
+
+  constructor(private _commonsLibService: CommonsLibService) { }
+
+  clickCard(): void {
+    this._commonsLibService.sendData({
+      name: this.product!.name,
+      price: this.product!.price
+    });
+  }
+}
+```
+
+Notar que estamos inyectando por constructor el `CommonsLibService` que viene del path `@commons-lib` que definimos en el archivo `tsconfig.json`.
+
+### Exponiendo nuestro micro frontend: mf-shopping
+
+Para que otros proyectos puedan usar nuestro micro frontend, necesitamos exportarlo, en este caso, exportaremos únicamente el módulo `ProductModule`.
+
+
+En el archivo `webpack.config.js` del micro frontend `mf-shopping` realizamos las siguientes configuraciones:
+
+```js
+const { shareAll, withModuleFederationPlugin, SharedMappings } = require('@angular-architects/module-federation/webpack');
+
+module.exports = withModuleFederationPlugin({
+
+  //* Le definimos un nombre a este micro frontend
+  name: 'mfShopping',
+
+  //* De este micro frontend vamos a exponer este módulo de productos. 
+  //* Este módulo será utilizable para los demás micro frontends
+  exposes: {
+    './ProductModule': './projects/mf-shopping/src/app/products/products.module.ts',
+  },
+
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  },
+
+  //* "@commons-lib", alias de las librerías que se utilzará en cada microfrontend. Por detrás, 
+  //* la librería Angular Architect va a generar la instancia de la descarga y la
+  //* va a inyectar a cada uno de los microfrontend. De esa manera es más limpio 
+  //* interactuar con librerías en un proyecto de Angular
+  sharedMappings: ["@commons-lib"] 
+});
+```
