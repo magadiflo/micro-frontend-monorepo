@@ -663,3 +663,101 @@ module.exports = withModuleFederationPlugin({
   sharedMappings: ["@commons-lib"] 
 });
 ```
+
+## Configurando e implementando mf-shell
+
+Primero agregaremos el microfrontend para usarlo en el `mf-shell`, para eso simplemente
+vamos al archivo `webpack.config.js` y configuramos el objeto `remotes`:
+
+```js
+const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
+
+module.exports = withModuleFederationPlugin({
+
+  remotes: {
+    "mfShopping": "http://localhost:4201/remoteEntry.js",
+  },
+
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  },
+
+  //* Para poder utilizar dentro de nuestro mf-shell lo exportado en la librería
+  sharedMappings: ['@commons-lib']
+});
+```
+
+Notar que inicialmente ya lo teníamos configurado, aquí solamente estamos dejando en el objeto `remotes` la url donde correrá el micro frontend `mf-shopping`. Notar, además que
+estamos definiendo el nombre que le pusimos a dicho micro frontend `mfShopping`.
+
+### Configurando ruta 
+
+En el modulo `app-routing.module.ts` crearemos las rutas de nuestra aplicación. Uitlizaremos para eso `LazyLoad` quién importará módulos de los microfrontends. 
+
+Como estos micro frontend están en otra ubicación, al hacer el `import('...')` typescript nos va a marcar un error, así que para solucionarlo debemos agregar el archivo `custom.d.ts` en el `mf-shell/app/` con el siguiente código:
+
+```typescript
+/**
+ * * Le decimos a TypeScript que van a existir módulos que
+ * * empezarán con mfShopping o mfPayment, y lo que
+ * * venga por delante de ellos (/*) que los reconozca.
+ */
+
+declare module 'mfShopping/*';
+declare module 'mfPayment/*';
+```
+Ahora sí, podemos configurar nuestras rutas:
+
+```typescript
+//* Para que no nos marque error en la ruta de improtación,
+//* es que agregamos el archivo custom.d.ts con cierta configuración.
+const routes: Routes = [
+  //* Primer microfrontend
+  {
+    path: '',
+    loadChildren: () => import('mfShopping/ProductsModule').then(m => m.ProductsModule),
+  },
+  //* Segundo microfrontend
+  {
+    path: 'payment',
+    loadChildren: () => import('mfPayment/PaymentComponent').then(c => c.PaymentComponent),
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+Si alguien va al path '', cargará el micro front end `ProductsModule` y si alguien va al path `payment` se cargará el micro frontend `PaymentComponent`.
+
+### Implementando vista
+
+En el `app.component.ts` del `mf-shell` inyectamos el `CommonsLibService`, desde donde llamaremos al observable `channelPayment$` definido en el servicio `CommonsLibService`:
+
+```typescript
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent {
+
+  constructor(public commonsLibService: CommonsLibService) { }
+
+}
+```
+```html
+<div class="container">
+  <h1 routerLink="/">Shell</h1>
+  <div class="cart" routerLink="/payment">
+    <span class="material-icons"> shopping_cart </span>
+    <span class="cart__count">
+      {{ commonsLibService.channelPayment$ | async }}
+    </span>
+  </div>
+</div>
+<router-outlet></router-outlet>
+```
