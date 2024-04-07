@@ -6,8 +6,8 @@ Tutorial tomado del canal de **youtube LogiDev**
 
 ## Características del proyecto
 
-- Angular 15.1.1
-- Node v16.13.2
+- Angular 15.2.10
+- Node 18.16.0
 
 
 ## Creando espacio de trabajo
@@ -112,3 +112,24 @@ En la imagen anterior, estamos desplegando el directorio del micro frontend `mf-
 En la imagen siguiente vemos la estructura del proyecto de librería `commons-lib`:
 
 ![library](./assets/03.library.png)
+
+---
+
+## [Activando Module Federation](https://www.npmjs.com/package/@angular-architects/module-federation)
+
+`@angular-architects/module-federation`, es una herramienta que permite la integración de la funcionalidad de `Module Federation` en aplicaciones Angular. `Module Federation` es una característica de Webpack 5 que **facilita la compartición de código entre distintas aplicaciones JavaScript. Permite cargar módulos de manera remota y dinámica en tiempo de ejecución, lo que resulta especialmente útil en entornos de microfrontends y arquitecturas distribuidas.**
+
+`@angular-architects/module-federation` proporciona una capa de abstracción y herramientas específicas para trabajar con `Module Federation` en el contexto de proyectos Angular, simplificando la configuración y el uso de esta funcionalidad dentro de una aplicación Angular.
+
+Al utilizar `@angular-architects/module-federation`, los desarrolladores pueden definir fácilmente qué partes de su aplicación Angular desean compartir y cómo integrarlas con otras aplicaciones que también utilicen Module Federation.
+
+Volviendo a nuestro proyecto, debemos activar el `module federation` a cada proyecto que hemos creado. Para eso necesitamos agrega la siguiente librería a nuestro proyecto:
+
+```bash
+$ npm i -D @angular-architects/module-federation@^15.0.0
+```
+
+**NOTA**
+
+> Observar, que como estamos usando Angular 15, en la instalación del angular-architects especificamos la versión que será compatible con nuestra vesión de Angular.
+
