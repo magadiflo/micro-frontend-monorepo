@@ -761,3 +761,128 @@ export class AppComponent {
 </div>
 <router-outlet></router-outlet>
 ```
+
+## Configura e implementa el micro frontend: mf-payment
+
+En el `app.module` agregamos el componente de tipo stand alone:
+
+```typescript
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    PaymentComponent
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### Implementa componente
+
+Antes de implementar el componente de `PaymentComponent` debemos ir al archivo `public-api.ts` de la librería `commons-lib` y exportar el archivo `product.interface` que contiene el modelo `ICommonProduct` dado que será usado en este micro frontend:
+
+```typescript
+/*
+ * Public API Surface of commons-lib
+ */
+
+export * from './lib/commons-lib.service';
+export * from './lib/commons-lib.component';
+export * from './lib/commons-lib.module';
+export * from './lib/models/product.interface';
+```
+Ahora sí, podemos implementar el componente `payment.component`:
+
+```typescript
+@Component({
+  selector: 'app-payment',
+  templateUrl: './payment.component.html',
+  styleUrls: ['./payment.component.scss'],
+  standalone: true,
+  imports: [CommonModule]
+})
+export class PaymentComponent implements OnInit {
+
+  public products: ICommonProduct[] = [];
+
+  ngOnInit(): void {
+    const productsStorage = localStorage.getItem('products');
+    console.log(productsStorage);
+
+    if (productsStorage) {
+      this.products = JSON.parse(productsStorage) as ICommonProduct[];
+    }
+  }
+
+}
+```
+```html
+<div class="container">
+    <h1>Productos agregados</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descripcion del producto</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of products">
+                <td data-label="Projeto">{{ item.name }}</td>
+                <td data-label="Projeto">{{ item.price }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+```
+### Configura el webpack.config.js del mf-payment
+
+Al igual que hicimos con la configuración del `mf-shopping`, aquí haremos algo similar:
+
+```javascript
+module.exports = withModuleFederationPlugin({
+
+  //* Definimos el nombre con el que será utilizado este micro frontend
+  name: 'mfPayment',
+
+  //* Estamos compartiendo un PaymentComponent, pero ese es un componente del tipo StandAlone,
+  //* es decir, por debajo es un módulo en sí mismo.
+  exposes: {
+    './PaymentComponent': './projects/mf-payment/src/app/payment/payment.component.ts',
+  },
+
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  },
+
+  //* Recordar, que como estamos usando la librería en este micro frontend,
+  //* debemos usar la opción sharedMapping y colocar el alias @commons-lib
+  sharedMappings: ["@commons-lib"],
+});
+```
+
+### Configura el webpack.config.js del mf-shell
+
+En el `webpack` del microfrontend contenedor (principal), debemos agregare en el objeto `remotes` el micro frontend de `payment`, así que lo que haremos será sencillamente agregarle la ruta  con el puerto que le definimos, en este caso el puerto `4202`:
+
+```typescript
+module.exports = withModuleFederationPlugin({
+
+  remotes: {
+    "mfShopping": "http://localhost:4201/remoteEntry.js",
+    "mfPayment": "http://localhost:4202/remoteEntry.js",
+  },
+
+  shared: {
+    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  },
+
+  //* Para poder utilizar dentro de nuestro mf-shell lo exportado en la librería
+  sharedMappings: ['@commons-lib']
+});
+```
