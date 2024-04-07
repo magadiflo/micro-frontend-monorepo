@@ -503,3 +503,101 @@ Como configuramos el `mf-shopping` para que se ejecute en el puerto `4201` enton
 
 ![run mf-shopping](./assets/04.run-mf-shopping.png)
 
+## Configurando canal de comunicación: commons-lib
+
+Para comunicarnos con un micro frontend podemos usar los `custom event` o símplemente lo que Angular ya nos ofrece: los `service`.
+
+Lo primero que debemos hacer es agregar la dependencia de `rxjs` en el `package.json` de la librería. La versión de esta dependencia la podemos obtener del `package.json` del proyecto principal (área de trabajo).
+
+```json
+{
+  "name": "commons-lib",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^15.1.0",
+    "@angular/core": "^15.1.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "rxjs": "~7.8.0"
+  },
+  "sideEffects": false
+}
+```
+
+Luego que hemos agregado la dependencia en el `package.json` de la librería, ejecutamos el siguiente comando para hacer la instalación. 
+Notar que estamos posicionados justo en la raíz del proyecto de librería `/commons-lib`:
+
+```bash
+M:\PROGRAMACION\DESARROLLO_ANGULAR\09.youtube_logi_dev\04.micro-frontend\micro-frontend-monorepo\projects\commons-lib (main -> origin) (commons-lib@0.0.1)
+$ npm install
+```
+
+Recordemos que la librería es un proyecto a parte, por eso es una librería. Por lo tanto, para hacer uso de la librería, nosotros debemos compilar la librería y recién en ese momento podremos hacer referencia a los compilados de la librería desde los micro frontends. 
+
+Para solucionar el inconveniente mencionado anteriormente, la comunidad de `Angular Architect` **nos dan una solución para poder integrar o hacer referencia a proyectos de tipo librería.**
+Para eso debemos realizar la siguiente configuración en el archivo `tsconfig.json` del proyecto principal (área de trabajo):
+
+```json
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@commons-lib": [
+        "projects/commons-lib/src/public-api.ts"
+      ]
+    },
+    ...
+  },
+  "angularCompilerOptions": {
+    ...
+  }
+}
+```
+
+- `"@commons-lib"`, agregamos el `@` para poder hacer uso del `@commons-lib` en lugar de escribir toda la ruta del arreglo.
+- `"projects/commons-lib/src/public-api.ts"`, es la ruta del archivo que se encargará de exponer todos los elementos que serán utilizados por los otros proyectos.
+
+Ahora, si abrimos el archivo `public-api.ts` veremos que por defecto se están exponiendo los siguientes archivos o paths:
+
+```typescript
+/*
+ * Public API Surface of commons-lib
+ */
+
+export * from './lib/commons-lib.service';
+export * from './lib/commons-lib.component';
+export * from './lib/commons-lib.module';
+```
+
+## Agregando funcionalidad a librería: commons-lib
+
+En el proyecto de librería `commons-lib` agregaremos una funcionalidad. Para eso aprovecharemos que por defecto angular nos ha creado el archivo `commons-lib.service` para poder implementarlo y quien está siendo expuesto en el archivo `public-api.ts`:
+
+```typescript
+@Injectable({
+  providedIn: 'root'
+})
+export class CommonsLibService {
+
+  private _products: ICommonProduct[] = [];
+  private _channelSource = new BehaviorSubject<number>(0);
+
+  public channelPayment$ = this._channelSource.asObservable();
+
+  sendData(product: ICommonProduct): void {
+    this._products.push(product);
+    localStorage.setItem('products', JSON.stringify(this._products));
+    this._channelSource.next(this._products.length);
+  }
+}
+```
+```typescript
+export interface ICommonProduct {
+  price: number;
+  name: string;
+}
+```
+
+De esta forma, cuando se agregue un producto, lo guardaremos en el `localStorage` y como hemos creado un `BehaviorSubject`, quienes se subscriban a ese observable serán notificados con el número de elementos que se han agregado.
