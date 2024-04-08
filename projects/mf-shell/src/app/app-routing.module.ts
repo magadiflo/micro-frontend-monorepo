@@ -7,12 +7,12 @@ const routes: Routes = [
   //* Primer microfrontend
   {
     path: '',
-    loadChildren: () => import('mfShopping/ProductsModule').then(m => m.ProductsModule),
+    loadChildren: () => import('mfShopping/ProductModule').then(m => m.ProductsModule),
   },
   //* Segundo microfrontend
   {
     path: 'payment',
-    loadChildren: () => import('mfPayment/PaymentComponent').then(c => c.PaymentComponent),
+    loadComponent: () => import('mfPayment/PaymentComponent').then(c => c.PaymentComponent),
   }
 ];
 

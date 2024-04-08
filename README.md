@@ -493,9 +493,10 @@ export class AppRoutingModule { }
 
 ### Ejecutando micro frontend mf-shopping
 
-Levantamos el micro frontend `mf-shopping` ejecutando el siguiente comando:
+Levantamos el micro frontend `mf-shopping` ejecutando el siguiente comando desde la raíz del proyecto (área de trabajo):
 
 ```bash
+M:\PROGRAMACION\DESARROLLO_ANGULAR\09.youtube_logi_dev\04.micro-frontend\micro-frontend-monorepo (main -> origin)
 $ ng serve mf-shopping -o
 ```
 
@@ -715,12 +716,12 @@ const routes: Routes = [
   //* Primer microfrontend
   {
     path: '',
-    loadChildren: () => import('mfShopping/ProductsModule').then(m => m.ProductsModule),
+    loadChildren: () => import('mfShopping/ProductModule').then(m => m.ProductsModule),
   },
   //* Segundo microfrontend
   {
     path: 'payment',
-    loadChildren: () => import('mfPayment/PaymentComponent').then(c => c.PaymentComponent),
+    loadComponent: () => import('mfPayment/PaymentComponent').then(c => c.PaymentComponent),
   }
 ];
 
@@ -731,7 +732,29 @@ const routes: Routes = [
 export class AppRoutingModule { }
 ```
 
-Si alguien va al path '', cargará el micro front end `ProductsModule` y si alguien va al path `payment` se cargará el micro frontend `PaymentComponent`.
+Si alguien va al path '', cargará el micro front end `ProductModule` y si alguien va al path `payment` se cargará el micro frontend `PaymentComponent`.
+
+Es importante ver que cuando usamos el módulo `ProductModule` estamos usando el `loadChildren`, mientras que si usamos un componente del tipo standalone `PaymentComponent` debemos usar el `loadComponent`.
+
+Como dato adicional, si vamos al microfrontend `ProductModule`, este está haciendo uso de la librería `HttpClientModule`, así que cuando lo usemos en el micro frontend contenedor `mf-shell` debemos e importarlo en su módulo `app.modules.ts` sino nos mostrará el error típico de que se requiere dicho módulo:
+
+Del microfrontend `mf-shell`:
+
+```typescript
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
 
 ### Implementando vista
 
@@ -886,3 +909,37 @@ module.exports = withModuleFederationPlugin({
   sharedMappings: ['@commons-lib']
 });
 ```
+
+---
+
+# Desplegando micro frontends
+
+---
+
+Ubicados en la raíz del proyecto (área de trabajo) ejecutamos cada uno de los microfrontends:
+
+```bash
+M:\PROGRAMACION\DESARROLLO_ANGULAR\09.youtube_logi_dev\04.micro-frontend\micro-frontend-monorepo (main -> origin)
+
+$ ng serve mf-shopping -o
+
+$ ng serve mf-payment -o
+
+$ ng serve mf-shell -o
+```
+
+Luego, de ejecutar los comandos, veremos que nuestros microservicios están desplegados en su correspondiente puerto:
+
+![run microfrontends](./assets/05.run-microfrontends.png)
+
+Como observamos, en el `mf-shell`, que es el micro frontend contenedor (espacio de trabajo) está desplegándose nuestro otro microfrontend `mf-shopping`, tal como lo teníamos previsto.
+
+Finalmente, podemos observar que nuestro microfrontend payment también está funcionando:
+
+![run microfrontends](./assets/06.show-microfrontend.png)
+
+**NOTA**
+
+> Como estamos usando el `localStorage`, si refrescamos la página de payment, veremos que el valor del carrito estará siempre en 0, dado que cuando agregamos algún producto al carrito, este producto se agrega al localStorage del mf-shell, a su dominio, mientras que si abrimos un nuevo navegador y accedemos a la ruta del mf-payment, este no lo va a encontrar ya que está corriendo en otro dominio, en este caso en otro pruerto.
+>
+> Solo dejo este comentario como nota, para saber el por qúe cuando lo abrimos con el puerto del propio mf-payment, no veremos ningún producto.
