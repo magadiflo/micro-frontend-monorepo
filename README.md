@@ -943,3 +943,162 @@ Finalmente, podemos observar que nuestro microfrontend payment también está fu
 > Como estamos usando el `localStorage`, si refrescamos la página de payment, veremos que el valor del carrito estará siempre en 0, dado que cuando agregamos algún producto al carrito, este producto se agrega al localStorage del mf-shell, a su dominio, mientras que si abrimos un nuevo navegador y accedemos a la ruta del mf-payment, este no lo va a encontrar ya que está corriendo en otro dominio, en este caso en otro pruerto.
 >
 > Solo dejo este comentario como nota, para saber el por qúe cuando lo abrimos con el puerto del propio mf-payment, no veremos ningún producto.
+
+## Desplegar múltiples proyectos a la vez
+
+Para evitar estar levantando proyecto tras proyecto, vamos a ejecutar el siguiente comando que está definido en el archivo `package.json` del proyecto raíz (área de trabajo):
+
+```json
+{
+  "name": "micro-frontend-monorepo",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "run:all": "node node_modules/@angular-architects/module-federation/src/server/mf-dev-server.js"
+  },
+  ...
+}
+```
+
+De la configuración anterior nos interesa el script `run:all`, con este comando podremos ejecutar todos los proyectos al mismo tiempo sin estar ejecutando uno por uno:
+
+```bash
+M:\PROGRAMACION\DESARROLLO_ANGULAR\09.youtube_logi_dev\04.micro-frontend\micro-frontend-monorepo (main -> origin)
+
+$ npm run run:all
+
+> micro-frontend-monorepo@0.0.0 run:all
+> node node_modules/@angular-architects/module-federation/src/server/mf-dev-server.js
+
+DEVSVR      | mf-shell 4200
+DEVSVR      | mf-payment 4202
+DEVSVR      | mf-shopping 4201
+mf-shell    | - Generating browser application bundles (phase: setup)...
+mf-payment  | - Generating browser application bundles (phase: setup)...
+mf-shopping | - Generating browser application bundles (phase: setup)...
+mf-shell    | TypeScript compiler options "target" and "useDefineForClassFields" are set to "ES2022" and "false" respectively by the Angular CLI. To control ECMA version and features use the Browerslist configuration. For more
+mf-shell    | information, see https://angular.io/guide/build#configuring-browser-compatibility
+mf-shell    | NOTE: You can set the "target" to "ES2022" in the project's tsconfig to remove this warning.
+mf-payment  | TypeScript compiler options "target" and "useDefineForClassFields" are set to "ES2022" and "false" respectively by the Angular CLI. To control ECMA version and features use the Browerslist configuration. For more
+mf-payment  | information, see https://angular.io/guide/build#configuring-browser-compatibility
+mf-payment  | NOTE: You can set the "target" to "ES2022" in the project's tsconfig to remove this warning.
+mf-shopping | TypeScript compiler options "target" and "useDefineForClassFields" are set to "ES2022" and "false" respectively by the Angular CLI. To control ECMA version and features use the Browerslist configuration. For more
+mf-shopping | information, see https://angular.io/guide/build#configuring-browser-compatibility
+mf-shopping | NOTE: You can set the "target" to "ES2022" in the project's tsconfig to remove this warning.
+mf-payment  | Another process, with id 14892, is currently running ngcc.
+mf-payment  | Waiting up to 250s for it to finish.
+mf-payment  | (If you are sure no ngcc process is running then you should delete the lock-file at M:/PROGRAMACION/DESARROLLO_ANGULAR/09.youtube_logi_dev/04.micro-frontend/micro-frontend-monorepo/node_modules/.ngcc_lock_file.)
+mf-shopping | Another process, with id 14892, is currently running ngcc.
+mf-shopping | Waiting up to 250s for it to finish.
+mf-shopping | (If you are sure no ngcc process is running then you should delete the lock-file at M:/PROGRAMACION/DESARROLLO_ANGULAR/09.youtube_logi_dev/04.micro-frontend/micro-frontend-monorepo/node_modules/.ngcc_lock_file.)
+mf-shopping | Another process, with id 3668, is currently running ngcc.
+mf-shopping | Waiting up to 250s for it to finish.
+mf-shopping | (If you are sure no ngcc process is running then you should delete the lock-file at M:/PROGRAMACION/DESARROLLO_ANGULAR/09.youtube_logi_dev/04.micro-frontend/micro-frontend-monorepo/node_modules/.ngcc_lock_file.)
+mf-payment  | √ Browser application bundle generation complete.
+mf-payment  |
+mf-payment  | Initial Chunk Files                                                           | Names         |  Raw Size
+mf-payment  | polyfills.js                                                                  | polyfills     | 339.88 kB |
+mf-payment  | styles.css, styles.js                                                         | styles        | 235.59 kB |
+mf-payment  | remoteEntry.js                                                                | mfPayment     | 235.53 kB |
+mf-payment  | vendor.js                                                                     | vendor        | 207.29 kB |
+mf-payment  | main.js                                                                       | main          |  29.11 kB |
+mf-payment  |
+mf-payment  | | Initial Total |   1.02 MB
+mf-payment  |
+mf-payment  | Lazy Chunk Files                                                              | Names         |  Raw Size
+mf-payment  | node_modules_angular_core_fesm2020_core_mjs.js                                | -             |   1.05 MB |
+mf-payment  | node_modules_rxjs_dist_esm_index_js.js                                        | -             | 402.38 kB |
+mf-payment  | node_modules_rxjs_dist_esm_operators_index_js.js                              | -             | 338.33 kB |
+mf-payment  | node_modules_angular_common_fesm2020_common_mjs-_ec490.js                     | -             | 286.93 kB |
+mf-payment  | node_modules_angular_common_fesm2020_common_mjs-_ec491.js                     | -             | 286.93 kB |
+mf-payment  | node_modules_angular_platform-browser_fesm2020_platform-browser_mjs-_18080.js | -             |  87.16 kB |
+mf-payment  | node_modules_angular_platform-browser_fesm2020_platform-browser_mjs-_18081.js | -             |  87.16 kB |
+mf-payment  | projects_mf-payment_src_bootstrap_ts.js                                       | bootstrap     |  15.65 kB |
+mf-payment  | projects_mf-payment_src_app_payment_payment_component_ts.js                   | -             |  11.21 kB |
+mf-payment  |
+mf-payment  | Build at: 2024-04-08T01:10:38.756Z - Hash: 95ba6cff735bf32c - Time: 12784ms
+mf-payment  |
+mf-payment  | ** Angular Live Development Server is listening on localhost:4202, open your browser on http://localhost:4202/ **
+mf-payment  |
+mf-payment  |
+mf-payment  | √ Compiled successfully.
+mf-shell    | √ Browser application bundle generation complete.
+mf-shell    |
+mf-shell    | Initial Chunk Files                                                           | Names         |  Raw Size
+mf-shell    | polyfills.js                                                                  | polyfills     | 344.15 kB |
+mf-shell    | styles.css, styles.js                                                         | styles        | 239.85 kB |
+mf-shell    | vendor.js                                                                     | vendor        | 207.32 kB |
+mf-shell    | main.js                                                                       | main          |  37.15 kB |
+mf-shell    |
+mf-shell    | | Initial Total | 828.47 kB
+mf-shell    |
+mf-shell    | Lazy Chunk Files                                                              | Names         |  Raw Size
+mf-shell    | node_modules_angular_core_fesm2020_core_mjs.js                                | -             |   1.05 MB |
+mf-shell    | _angular_core.js                                                              | -             |   1.05 MB |
+mf-shell    | node_modules_rxjs_dist_esm_index_js.js                                        | -             | 403.37 kB |
+mf-shell    | rxjs.js                                                                       | -             | 382.10 kB |
+mf-shell    | node_modules_rxjs_dist_esm_operators_index_js.js                              | -             | 339.16 kB |
+mf-shell    | rxjs_operators.js                                                             | -             | 321.22 kB |
+mf-shell    | node_modules_angular_router_fesm2020_router_mjs-_6f000.js                     | -             | 292.29 kB |
+mf-shell    | node_modules_angular_router_fesm2020_router_mjs-_6f001.js                     | -             | 292.29 kB |
+mf-shell    | node_modules_angular_common_fesm2020_common_mjs-_ec490.js                     | -             | 286.93 kB |
+mf-shell    | node_modules_angular_common_fesm2020_common_mjs-_ec491.js                     | -             | 286.93 kB |
+mf-shell    | node_modules_angular_common_fesm2020_http_mjs-_68760.js                       | -             |  93.28 kB |
+mf-shell    | node_modules_angular_common_fesm2020_http_mjs-_68761.js                       | -             |  93.28 kB |
+mf-shell    | node_modules_angular_platform-browser_fesm2020_platform-browser_mjs-_18080.js | -             |  87.16 kB |
+mf-shell    | node_modules_angular_platform-browser_fesm2020_platform-browser_mjs-_18081.js | -             |  87.16 kB |
+mf-shell    | projects_mf-shell_src_bootstrap_ts.js                                         | bootstrap     |  12.03 kB |
+mf-shell    | projects_commons-lib_src_public-api_ts.js                                     | -             |   6.28 kB |
+mf-shell    | | -             |   0 bytes |
+mf-shell    | | -             |   0 bytes |
+mf-shell    |
+mf-shell    | Build at: 2024-04-08T01:10:39.546Z - Hash: 21e13bd3f9b07e50 - Time: 13545ms
+mf-shell    |
+mf-shell    | ** Angular Live Development Server is listening on localhost:4200, open your browser on http://localhost:4200/ **
+mf-shell    |
+mf-shell    |
+mf-shell    | √ Compiled successfully.
+mf-shopping | √ Browser application bundle generation complete.
+mf-shopping |
+mf-shopping | Initial Chunk Files                                                           | Names                    |  Raw Size
+mf-shopping | polyfills.js                                                                  | polyfills                | 342.20 kB |
+mf-shopping | remoteEntry.js                                                                | mfShopping               | 238.97 kB |
+mf-shopping | styles.css, styles.js                                                         | styles                   | 237.91 kB |
+mf-shopping | vendor.js                                                                     | vendor                   | 207.33 kB |
+mf-shopping | main.js                                                                       | main                     |  32.29 kB |
+mf-shopping |
+mf-shopping | | Initial Total            |   1.03 MB
+mf-shopping |
+mf-shopping | Lazy Chunk Files                                                              | Names                    |  Raw Size
+mf-shopping | node_modules_angular_core_fesm2020_core_mjs.js                                | -                        |   1.05 MB |
+mf-shopping | _angular_core.js                                                              | -                        |   1.05 MB |
+mf-shopping | node_modules_rxjs_dist_esm_index_js.js                                        | -                        | 403.38 kB |
+mf-shopping | rxjs.js                                                                       | -                        | 381.77 kB |
+mf-shopping | node_modules_rxjs_dist_esm_operators_index_js.js                              | -                        | 339.16 kB |
+mf-shopping | rxjs_operators.js                                                             | -                        | 320.89 kB |
+mf-shopping | node_modules_angular_router_fesm2020_router_mjs-_6f000.js                     | -                        | 292.30 kB |
+mf-shopping | node_modules_angular_router_fesm2020_router_mjs-_6f001.js                     | -                        | 292.30 kB |
+mf-shopping | node_modules_angular_common_fesm2020_common_mjs-_ec490.js                     | -                        | 286.94 kB |
+mf-shopping | node_modules_angular_common_fesm2020_common_mjs-_ec491.js                     | -                        | 286.94 kB |
+mf-shopping | node_modules_angular_common_fesm2020_http_mjs-_68760.js                       | -                        |  93.29 kB |
+mf-shopping | node_modules_angular_common_fesm2020_http_mjs-_68761.js                       | -                        |  93.29 kB |
+mf-shopping | node_modules_angular_platform-browser_fesm2020_platform-browser_mjs-_18080.js | -                        |  87.17 kB |
+mf-shopping | node_modules_angular_platform-browser_fesm2020_platform-browser_mjs-_18081.js | -                        |  87.17 kB |
+mf-shopping | projects_mf-shopping_src_app_products_products_module_ts-_65340.js            | products-products-module |  18.57 kB |
+mf-shopping | projects_mf-shopping_src_app_products_products_module_ts-_65341.js            | -                        |  18.57 kB |
+mf-shopping | projects_mf-shopping_src_bootstrap_ts.js                                      | bootstrap                |   7.71 kB |
+mf-shopping | projects_commons-lib_src_public-api_ts.js                                     | -                        |   6.28 kB |
+mf-shopping |
+mf-shopping | Build at: 2024-04-08T01:10:41.328Z - Hash: 26cf24c933dce9c2 - Time: 15328ms
+mf-shopping |
+mf-shopping | ** Angular Live Development Server is listening on localhost:4201, open your browser on http://localhost:4201/ **
+mf-shopping |
+mf-shopping |
+mf-shopping | √ Compiled successfully.
+```
+
+Como vemos, todos nuestros microfrontends se han levantado sin problemas.
